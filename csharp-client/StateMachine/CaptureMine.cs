@@ -1,41 +1,31 @@
 ﻿using System;
 using System.Linq;
-using CoveoBlitz;
-using CoveoBlitz.RandomBot;
+using Coveo.Bot;
+using Coveo.Core;
 
 namespace Coveo.StateMachine
 {
-    public class CaptureMine : IState
+    /// <summary>
+    /// State where we search for the next mine to get
+    /// </summary>
+    public class CaptureMine : State
     {
-        public override IState CalculateNextState(GameState state, TestBot bot)
+        public override State CalculateNextState(GameState state, TestBot bot)
         {
-            // Target Enemy ?
-
-            // if (costToMine + 25 >= life)
-            // Heal
-
-            // else
-            // mine
-
             // if capturing a mine will kill you
-            if(state.myHero.life < 26)
+            if(state.MyHero.Life < 26)
                 return new GoHeal();
 
-
             // Max mine of hero
-            var maxMines = 0;
-            foreach (var hero in state.heroes)
-            {
-                if (maxMines < hero.mineCount)
-                    maxMines = hero.mineCount;
-            }
+            var maxMines = state.Heroes.Select(hero => hero.MineCount).Concat(new[] {0}).Max();
 
-            if (state.myHero.mineCount + 3 <= maxMines)
+            // If we have 3 mine less than the max mine of player
+            if (state.MyHero.MineCount + 3 <= maxMines)
             {
-                if(state.myHero.life >= 75)
+                if(state.MyHero.Life >= 75)
                     return new AttackWinner();
-                else
-                    return new GoHeal();
+                
+                return new GoHeal();
             }
 
             return this;
@@ -44,7 +34,7 @@ namespace Coveo.StateMachine
         public override Pos GetGoal(GameState state, TestBot bot)
         {
             Console.WriteLine("Capturing mine");
-            return bot.GetClosestMine(state.myHero.pos, state.board);
+            return bot.GetClosestMine(state.MyHero.Pos, state.Board);
         }
     }
 }

@@ -1,4 +1,4 @@
-namespace CoveoBlitz
+namespace Coveo.Core
 {
     public interface ISimpleBot
     {

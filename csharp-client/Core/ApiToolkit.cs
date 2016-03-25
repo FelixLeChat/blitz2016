@@ -1,64 +1,61 @@
-﻿// Copyright (c) 2005-2016, Coveo Solutions Inc.
-
-using System;
+﻿using System;
 using System.IO;
 using System.Net;
-using System.Runtime.Serialization.Json;
-using System.Text;
+using Newtonsoft.Json;
 
-namespace CoveoBlitz
+namespace Coveo.Core
 {
     public class ApiToolkit
     {
-        public const string TRAINING_URL = "/api/training";
-        public const string ARENA_URL = "/api/arena";
+        public const string TrainingUrl = "/api/training";
+        public const string ArenaUrl = "/api/arena";
 
-        private readonly string uri;
-        private readonly string serverURL;
+        private readonly string _uri;
+        private readonly string _serverUrl;
 
-        public string playURL { get; private set; }
-        public string viewURL { get; private set; }
-        public string botKey { get; private set; }
+        public string PlayUrl { get; private set; }
+        public string ViewUrl { get; private set; }
+        public string BotKey { get; }
 
-        public GameState gameState { get; private set; }
-        public bool errored { get; set; }
+        public GameState GameState { get; private set; }
+        public bool Errored { get; set; }
 
-        public ApiToolkit(string serverURL,
+        public ApiToolkit(string serverUrl,
             string key,
             bool trainingMode,
             string gameId,
             uint turns = 4000,
             string map = null)
         {
-            this.botKey = key;
-            this.uri = serverURL + (trainingMode ? TRAINING_URL : ARENA_URL);
-            this.uri += "?key=" + key;
+            BotKey = key;
+            _uri = serverUrl + (trainingMode ? TrainingUrl : ArenaUrl);
+            _uri += "?key=" + key;
             if (trainingMode) {
-                this.uri += "&turns=" + turns;
+                _uri += "&turns=" + turns;
                 if (map != null) {
-                    this.uri += "&map=" + map;
+                    _uri += "&map=" + map;
                 }
             } else {
-                this.uri += "&gameId=" + gameId;
+                _uri += "&gameId=" + gameId;
             }
 
-            errored = false;
+            Errored = false;
         }
 
         //initializes a new game, its syncronised
         public void CreateGame()
         {
-            WebRequest client = WebRequest.CreateHttp(uri);
+            WebRequest client = WebRequest.CreateHttp(_uri);
             client.Method = "POST";
             client.ContentType = "application/x-www-form-urlencoded";
             client.Timeout = 1000*60*60; // Because we don't want to timeout
 
             try {
-                string result = new StreamReader(client.GetResponse().GetResponseStream()).ReadToEnd();
-                this.gameState = Deserialize(result);
+                var result = new StreamReader(client.GetResponse().GetResponseStream()).ReadToEnd();
+                GameState = Deserialize(result);
             } catch (WebException exception) {
                 using (var reader = new StreamReader(exception.Response.GetResponseStream())) {
-                    errored = true;
+                    Errored = true;
                     Console.WriteLine(exception.Message);
                     Console.WriteLine(reader.ReadToEnd());
                 }
@@ -67,38 +64,40 @@ namespace CoveoBlitz
 
         private GameState Deserialize(string json)
         {
-            byte[] byteArray = Encoding.UTF8.GetBytes(json);
-            MemoryStream stream = new MemoryStream(byteArray);
+            var response = JsonConvert.DeserializeObject<GameResponse>(json);
 
-            DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(GameResponse));
-            GameResponse gameResponse = (GameResponse) ser.ReadObject(stream);
+            /*var byteArray = Encoding.UTF8.GetBytes(json);
+            var stream = new MemoryStream(byteArray);
 
-            playURL = gameResponse.playUrl;
-            viewURL = gameResponse.viewUrl;
+            var ser = new DataContractJsonSerializer(typeof(GameResponse));
+            var gameResponse = (GameResponse) ser.ReadObject(stream);*/
+
+            PlayUrl = response.PlayUrl;
+            ViewUrl = response.ViewUrl;
 
             return new GameState() {
-                myHero = gameResponse.hero,
-                heroes = gameResponse.game.heroes,
-                currentTurn = gameResponse.game.turn,
-                maxTurns = gameResponse.game.maxTurns,
-                finished = gameResponse.game.finished,
-                board = createBoard(gameResponse.game.board.size, gameResponse.game.board.tiles)
+                MyHero = response.Hero,
+                Heroes = response.Game.Heroes,
+                CurrentTurn = response.Game.Turn,
+                MaxTurns = response.Game.MaxTurns,
+                Finished = response.Game.Finished,
+                Board = CreateBoard(response.Game.Board.Size, response.Game.Board.Tiles)
             };
         }
 
         public void MoveHero(string direction)
         {
-            string myParameters = "key=" + botKey + "&dir=" + direction;
+            var myParameters = "key=" + BotKey + "&dir=" + direction;
 
-            using (WebClient client = new WebClient()) {
+            using (var client = new WebClient()) {
                 client.Headers[HttpRequestHeader.ContentType] = "application/x-www-form-urlencoded";
 
                 try {
-                    string result = client.UploadString(playURL, myParameters);
-                    this.gameState = Deserialize(result);
+                    var result = client.UploadString(PlayUrl, myParameters);
+                    GameState = Deserialize(result);
                 } catch (WebException exception) {
                     using (var reader = new StreamReader(exception.Response.GetResponseStream())) {
-                        errored = true;
+                        Errored = true;
                         Console.WriteLine(exception.Message);
                         Console.WriteLine(reader.ReadToEnd());
                     }
@@ -106,76 +105,76 @@ namespace CoveoBlitz
             }
         }
 
-        private Tile[][] createBoard(int size,
+        private Tile[][] CreateBoard(int size,
             string data)
         {
-            Tile[][] board = new Tile[size][];
+            var board = new Tile[size][];
 
-            for (int i = 0; i < size; i++) {
+            for (var i = 0; i < size; i++) {
                 board[i] = new Tile[size];
             }
 
             int x = 0, y = 0;
-            char[] charData = data.ToCharArray();
+            var charData = data.ToCharArray();
 
-            for (int i = 0; i < charData.Length; i += 2) {
+            for (var i = 0; i < charData.Length; i += 2) {
                 switch (charData[i]) {
                     case '^':
-                        board[x][y] = Tile.SPIKES;
+                        board[x][y] = Tile.Spikes;
                         break;
 
                     case '#':
-                        board[x][y] = Tile.IMPASSABLE_WOOD;
+                        board[x][y] = Tile.ImpassableWood;
                         break;
 
                     case ' ':
-                        board[x][y] = Tile.FREE;
+                        board[x][y] = Tile.Free;
                         break;
 
                     case '@':
                         switch (charData[i + 1]) {
                             case '1':
-                                board[x][y] = Tile.HERO_1;
+                                board[x][y] = Tile.Hero1;
                                 break;
 
                             case '2':
-                                board[x][y] = Tile.HERO_2;
+                                board[x][y] = Tile.Hero2;
                                 break;
 
                             case '3':
-                                board[x][y] = Tile.HERO_3;
+                                board[x][y] = Tile.Hero3;
                                 break;
 
                             case '4':
-                                board[x][y] = Tile.HERO_4;
+                                board[x][y] = Tile.Hero4;
                                 break;
                         }
                         break;
 
                     case '[':
-                        board[x][y] = Tile.TAVERN;
+                        board[x][y] = Tile.Tavern;
                         break;
 
                     case '$':
                         switch (charData[i + 1]) {
                             case '-':
-                                board[x][y] = Tile.GOLD_MINE_NEUTRAL;
+                                board[x][y] = Tile.GoldMineNeutral;
                                 break;
 
                             case '1':
-                                board[x][y] = Tile.GOLD_MINE_1;
+                                board[x][y] = Tile.GoldMine1;
                                 break;
 
                             case '2':
-                                board[x][y] = Tile.GOLD_MINE_2;
+                                board[x][y] = Tile.GoldMine2;
                                 break;
 
                             case '3':
-                                board[x][y] = Tile.GOLD_MINE_3;
+                                board[x][y] = Tile.GoldMine3;
                                 break;
 
                             case '4':
-                                board[x][y] = Tile.GOLD_MINE_4;
+                                board[x][y] = Tile.GoldMine4;
                                 break;
                         }
                         break;

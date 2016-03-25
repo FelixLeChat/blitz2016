@@ -1,8 +1,6 @@
-﻿// Copyright (c) 2005-2016, Coveo Solutions Inc.
-
-using CoveoBlitz;
-using CoveoBlitz.RandomBot;
-using System;
+﻿using System;
+using Coveo.Bot;
+using Coveo.Core;
 
 namespace Coveo
 {
@@ -16,6 +14,8 @@ namespace Coveo
 
         private static void Main(string[] args)
         {
+            SimpleBotRunner runner;
+
             if (args.Length < 2) {
                 Console.WriteLine("Usage: myBot.exe key training|arena gameId");
                 Console.WriteLine("gameId is optionnal when in training mode");
@@ -23,13 +23,14 @@ namespace Coveo
                 return;
             }
 
-            string serverURL = "http://blitz2016.xyz:8080";
-            string gameId = args.Length == 3 ? args[2] : null;
+            // Link to private server - Still need to figure out how to start matches
+            const string serverUrl = "http://ec2-52-207-237-66.compute-1.amazonaws.com/";
+            var gameId = args.Length == 3 ? args[2] : null;
 
-            SimpleBotRunner runner = new SimpleBotRunner(
-                new ApiToolkit(serverURL, args[0], args[1] == "training", gameId),
+            runner = new SimpleBotRunner(
+                new ApiToolkit(serverUrl, args[0], args[1] == "training", gameId),
                 new TestBot());
-
+            
             runner.Run();
 
             Console.Read();

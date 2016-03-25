@@ -1,22 +1,21 @@
-﻿using System;
-using CoveoBlitz;
-using CoveoBlitz.RandomBot;
+﻿using Coveo.Bot;
+using Coveo.Core;
 
 namespace Coveo.StateMachine
 {
-    public class AttackWinner : IState
+    public class AttackWinner : State
     {
-        public override IState CalculateNextState(GameState state, TestBot bot)
+        public override State CalculateNextState(GameState state, TestBot bot)
         {
             var enemy = GetEnemy(state);
 
-            if (enemy.mineCount <= state.myHero.mineCount)
+            if (enemy.MineCount <= state.MyHero.MineCount)
             {
-                if(state.myHero.life > 25)
+                if(state.MyHero.Life > 25)
                     return new CaptureMine();
                 return new GoHeal();
             }
-            else if(enemy.life > state.myHero.life)
+            else if(enemy.Life > state.MyHero.Life)
                 return new GoHeal();
 
             return this;
@@ -25,27 +24,27 @@ namespace Coveo.StateMachine
         public override Pos GetGoal(GameState state, TestBot bot)
         {
             var enemy = GetEnemy(state);
-            return enemy.pos;
+            return enemy.Pos;
         }
 
         public Hero GetEnemy(GameState state)
         {
-            var EnemyPlayer = new Hero();
-            var MaxMine = 0;
+            var enemyPlayer = new Hero();
+            var maxMine = 0;
 
-            foreach (var hero in state.heroes)
+            foreach (var hero in state.Heroes)
             {
-                if (hero.mineCount > MaxMine)
+                if (hero.MineCount > maxMine)
                 {
-                    if (hero.pos != state.myHero.pos)
+                    if (hero.Pos != state.MyHero.Pos)
                     {
-                        MaxMine = hero.mineCount;
-                        EnemyPlayer = hero;
+                        maxMine = hero.MineCount;
+                        enemyPlayer = hero;
                     }
                 }
             }
 
-            return EnemyPlayer;
+            return enemyPlayer;
         }
     }
 }

@@ -1,12 +1,11 @@
-﻿using System.Runtime.CompilerServices;
-using CoveoBlitz;
-using CoveoBlitz.RandomBot;
+﻿using Coveo.Bot;
+using Coveo.Core;
 
 namespace Coveo.StateMachine
 {
-    public abstract class IState
+    public abstract class State
     {
-        public virtual IState CalculateNextState(GameState state, TestBot bot)
+        public virtual State CalculateNextState(GameState state, TestBot bot)
         {
             return this;
         }

@@ -1,14 +1,11 @@
 ﻿// Copyright (c) 2005-2016, Coveo Solutions Inc.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Policy;
-using System.Threading;
-using Coveo.Bot;
+using Coveo.Core;
 
-namespace CoveoBlitz.RandomBot
+namespace Coveo.Bot
 {
     /// <summary>
     /// RandomBot
@@ -17,7 +14,7 @@ namespace CoveoBlitz.RandomBot
     /// </summary>
     public class RandomBot : ISimpleBot
     {
-        private readonly Random random = new Random();
+        private readonly Random _random = new Random();
 
         /// <summary>
         /// This will be run before the game starts
@@ -34,49 +31,49 @@ namespace CoveoBlitz.RandomBot
         /// <returns></returns>
         public string Move(GameState state)
         {
-            return CalculatePath(state, state.heroes[1].pos);
+            return CalculatePath(state, state.Heroes[1].Pos);
         }
 
         private string CalculatePath(GameState state, Pos goal)
         {
-            Pos start = state.myHero.pos;
+            var start = state.MyHero.Pos;
 
-            Console.WriteLine("Begining calculating path from ({0},{1}) to ({2},{3})", start.x, start.y, goal.x, goal.y);
+            Console.WriteLine("Begining calculating path from ({0},{1}) to ({2},{3})", start.X, start.Y, goal.X, goal.Y);
 
             try
             {
-                List<Pos> visited = new List<Pos>();
-                List<PathCoord> availableTiles = new List<PathCoord>();
+                var visited = new List<Pos>();
+                var availableTiles = new List<PathCoord>();
 
-                var first = createPathCoord(start, null, state, goal, null);
+                var first = CreatePathCoord(start, null, state, goal, null);
                 availableTiles.Add(first);
 
                 while (availableTiles.Any())
                 {
                     // Sort availableTiles
-                    availableTiles.Sort((f1, f2) => f1.heuristic.CompareTo(f2.heuristic));
+                    availableTiles.Sort((f1, f2) => f1.Heuristic.CompareTo(f2.Heuristic));
 
                     var currentVisited = availableTiles.First();
                     availableTiles.Remove(currentVisited);
 
-                    if (visited.Any(x => x.x == currentVisited.current.x && x.y==currentVisited.current.y))
+                    if (visited.Any(x => x.X == currentVisited.Current.X && x.Y==currentVisited.Current.Y))
                     {
                         continue;
                     }
 
                    // Console.WriteLine("Visiting ({0},{1}) with heuristic {2}", currentVisited.current.x, currentVisited.current.y, currentVisited.heuristic);
 
-                    visited.Add(currentVisited.current);
+                    visited.Add(currentVisited.Current);
 
-                    if (getDistance(currentVisited.current, goal) == 0)
+                    if (GetDistance(currentVisited.Current, goal) == 0)
                     {
-                        string direction = Restitute(start, currentVisited);
+                        var direction = Restitute(start, currentVisited);
                         Console.WriteLine("Path found! Going {0}", direction);
                         return direction;
                     }
                     else
                     {
-                        var spreadFrom = getAvailableCoords(currentVisited, state, goal);
+                        var spreadFrom = GetAvailableCoords(currentVisited, state, goal);
                         availableTiles.AddRange(spreadFrom);
                     }
                 }
@@ -94,12 +91,12 @@ namespace CoveoBlitz.RandomBot
         {
             while (foundPath != null)
             {
-                int distance = getDistance(start, foundPath.current);
+                var distance = GetDistance(start, foundPath.Current);
                 if (distance == 1)
                 {
-                    return foundPath.previousDirection;
+                    return foundPath.PreviousDirection;
                 }
-                foundPath = foundPath.previous;
+                foundPath = foundPath.Previous;
             }
 
             Console.WriteLine("Error with restitute");
@@ -107,15 +104,15 @@ namespace CoveoBlitz.RandomBot
         }
 
 
-        private List<PathCoord> getAvailableCoords(PathCoord current, GameState state, Pos goal)
+        private List<PathCoord> GetAvailableCoords(PathCoord current, GameState state, Pos goal)
         {
-            PathCoord east = createPathCoord(new Pos() { x = current.current.x, y = current.current.y + 1 }, current, state,
+            var east = CreatePathCoord(new Pos() { X = current.Current.X, Y = current.Current.Y + 1 }, current, state,
                 goal, Direction.East);
-            PathCoord west = createPathCoord(new Pos() { x = current.current.x, y = current.current.y - 1 }, current, state,
+            var west = CreatePathCoord(new Pos() { X = current.Current.X, Y = current.Current.Y - 1 }, current, state,
                 goal, Direction.West);
-            PathCoord north = createPathCoord(new Pos() { x = current.current.x - 1, y = current.current.y }, current, state,
+            var north = CreatePathCoord(new Pos() { X = current.Current.X - 1, Y = current.Current.Y }, current, state,
                 goal, Direction.North);
-            PathCoord south = createPathCoord(new Pos() { x = current.current.x + 1, y = current.current.y }, current, state,
+            var south = CreatePathCoord(new Pos() { X = current.Current.X + 1, Y = current.Current.Y }, current, state,
                 goal, Direction.South);
 
             var rc = new List<PathCoord>();
@@ -138,12 +135,12 @@ namespace CoveoBlitz.RandomBot
             return rc;
         }
 
-        private bool isValid(GameState state, Pos coordToValidate)
+        private bool IsValid(GameState state, Pos coordToValidate)
         {
-            int size = state.board.GetLength(0);
+            var size = state.Board.GetLength(0);
 
-            if (coordToValidate.x < 0 || coordToValidate.x >= size ||
-                coordToValidate.y < 0 || coordToValidate.y >= size)
+            if (coordToValidate.X < 0 || coordToValidate.X >= size ||
+                coordToValidate.Y < 0 || coordToValidate.Y >= size)
             {
                 return false;
             }
@@ -151,33 +148,33 @@ namespace CoveoBlitz.RandomBot
             return true;
         }
 
-        private PathCoord createPathCoord(Pos current, PathCoord previous, GameState state, Pos goal, string previousDirection)
+        private PathCoord CreatePathCoord(Pos current, PathCoord previous, GameState state, Pos goal, string previousDirection)
         {
             try
             {
-                if (!isValid(state, current))
+                if (!IsValid(state, current))
                 {
                     return null;
                 }
 
-                PathCoord pc = new PathCoord();
+                var pc = new PathCoord();
 
-                if (state.board[current.y][current.x] == Tile.IMPASSABLE_WOOD)
+                if (state.Board[current.Y][current.X] == Tile.ImpassableWood)
                 {
                     return null;
                 }
 
                 if (previous != null)
                 {
-                    pc.weight = previous.weight; // to modify
+                    pc.Weight = previous.Weight; // to modify
                 }
 
-                pc.weight += getCost(state.board[current.y][current.x]);
-                pc.current = current;
-                pc.previous = previous;
-                pc.previousDirection = previousDirection;
+                pc.Weight += GetCost(state.Board[current.Y][current.X]);
+                pc.Current = current;
+                pc.Previous = previous;
+                pc.PreviousDirection = previousDirection;
 
-                pc.heuristic = pc.weight + getDistance(current, goal);
+                pc.Heuristic = pc.Weight + GetDistance(current, goal);
                 return pc;
 
             }
@@ -188,12 +185,12 @@ namespace CoveoBlitz.RandomBot
             }
         }
 
-        private int getCost(Tile tile)
+        private int GetCost(Tile tile)
         {
             int cost;
             switch (tile)
             {
-                case Tile.SPIKES:
+                case Tile.Spikes:
                     cost = 10;
                     break;
                 default:
@@ -203,9 +200,9 @@ namespace CoveoBlitz.RandomBot
             return cost;
         }
 
-        private int getDistance(Pos a, Pos b)
+        private int GetDistance(Pos a, Pos b)
         {
-            return Math.Abs(b.x - a.x) + Math.Abs(b.y - a.y);
+            return Math.Abs(b.X - a.X) + Math.Abs(b.Y - a.Y);
         }
 
         //public string Move(GameState state)

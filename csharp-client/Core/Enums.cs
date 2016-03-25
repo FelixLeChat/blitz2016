@@ -1,20 +1,20 @@
-﻿namespace CoveoBlitz
+﻿namespace Coveo.Core
 {
     public enum Tile
     {
-        IMPASSABLE_WOOD,
-        FREE,
-        SPIKES,
-        HERO_1,
-        HERO_2,
-        HERO_3,
-        HERO_4,
-        TAVERN,
-        GOLD_MINE_NEUTRAL,
-        GOLD_MINE_1,
-        GOLD_MINE_2,
-        GOLD_MINE_3,
-        GOLD_MINE_4
+        ImpassableWood,
+        Free,
+        Spikes,
+        Hero1,
+        Hero2,
+        Hero3,
+        Hero4,
+        Tavern,
+        GoldMineNeutral,
+        GoldMine1,
+        GoldMine2,
+        GoldMine3,
+        GoldMine4
     }
 
     public class Direction
@@ -31,13 +31,13 @@
         public const int LifeDrainOnHit = 25;
     }
 
-    public static class extensions
+    public static class Extensions
     {
         public static Tile At(this Tile[][] tiles, Pos pos)
         {
-            if (pos.x < 0 || pos.y < 0 || pos.x > tiles.Length || pos.y > tiles[0].Length)
-                return Tile.IMPASSABLE_WOOD;
-            return tiles[pos.y][pos.x];
+            if (pos.X < 0 || pos.Y < 0 || pos.X > tiles.Length || pos.Y > tiles[0].Length)
+                return Tile.ImpassableWood;
+            return tiles[pos.Y][pos.X];
         }
     }
 }

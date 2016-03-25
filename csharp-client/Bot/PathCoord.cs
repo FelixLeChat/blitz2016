@@ -1,20 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CoveoBlitz;
+﻿using Coveo.Core;
 
 namespace Coveo.Bot
 {
     public class PathCoord
     {
-        public Pos current;
-        public PathCoord previous;
+        public Pos Current;
+        public PathCoord Previous;
 
-        public int heuristic;
-        public int weight;
+        public int Heuristic;
+        public int Weight;
 
-        public string previousDirection;
+        public string PreviousDirection;
     }
 }

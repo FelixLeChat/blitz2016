@@ -1,97 +1,97 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-namespace CoveoBlitz
+namespace Coveo.Core
 {
     [DataContract]
     public class GameResponse
     {
         [DataMember]
-        public Game game;
+        public Game Game;
 
         [DataMember]
-        public Hero hero;
+        public Hero Hero;
 
         [DataMember]
-        public string token;
+        public string Token;
 
         [DataMember]
-        public string viewUrl;
+        public string ViewUrl;
 
         [DataMember]
-        public string playUrl;
+        public string PlayUrl;
     }
 
     [DataContract]
     public class Game
     {
         [DataMember]
-        public string id;
+        public string Id;
 
         [DataMember]
-        public int turn;
+        public int Turn;
 
         [DataMember]
-        public int maxTurns;
+        public int MaxTurns;
 
         [DataMember]
-        public List<Hero> heroes;
+        public List<Hero> Heroes;
 
         [DataMember]
-        public Board board;
+        public Board Board;
 
         [DataMember]
-        public bool finished;
+        public bool Finished;
     }
 
     [DataContract]
     public class Hero
     {
         [DataMember]
-        public int id;
+        public int Id;
 
         [DataMember]
-        public string name;
+        public string Name;
 
         [DataMember]
-        public int elo;
+        public int Elo;
 
         [DataMember]
-        public Pos pos;
+        public Pos Pos;
 
         [DataMember]
-        public int life;
+        public int Life;
 
         [DataMember]
-        public int gold;
+        public int Gold;
 
         [DataMember]
-        public int mineCount;
+        public int MineCount;
 
         [DataMember]
-        public Pos spawnPos;
+        public Pos SpawnPos;
 
         [DataMember]
-        public bool crashed;
+        public bool Crashed;
     }
 
     [DataContract]
     public class Pos
     {
         [DataMember]
-        public int x;
+        public int X;
 
         [DataMember]
-        public int y;
+        public int Y;
     }
 
     [DataContract]
     public class Board
     {
         [DataMember]
-        public int size;
+        public int Size;
 
         [DataMember]
-        public string tiles;
+        public string Tiles;
     }
 }

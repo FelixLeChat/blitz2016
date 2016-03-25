@@ -1,25 +1,28 @@
-﻿using CoveoBlitz;
-using CoveoBlitz.RandomBot;
+﻿using Coveo.Bot;
+using Coveo.Core;
 
 namespace Coveo.StateMachine
 {
-    public class GoHeal : IState
+    /// <summary>
+    /// Locate the nearest tavern and go use it
+    /// </summary>
+    public class GoHeal : State
     {
-        public override IState CalculateNextState(GameState state, TestBot bot)
+        public override State CalculateNextState(GameState state, TestBot bot)
         {
             // Done Healing or no Cash
-            if (state.myHero.life > 85 || state.myHero.gold == 0)
+            if (state.MyHero.Life > 85 || state.MyHero.Gold == 0)
             {
                 // Check if there is a good enemy to steal
                 var maxMines = 0;
-                foreach (var hero in state.heroes)
+                foreach (var hero in state.Heroes)
                 {
-                    if (maxMines < hero.mineCount)
-                        maxMines = hero.mineCount;
+                    if (maxMines < hero.MineCount)
+                        maxMines = hero.MineCount;
                 }
 
                 // Go steal if he has more mine than you
-                if (state.myHero.mineCount + 3 <= maxMines)
+                if (state.MyHero.MineCount + 3 <= maxMines)
                 {
                     return new AttackWinner();
                 }
@@ -35,7 +38,7 @@ namespace Coveo.StateMachine
         public override Pos GetGoal(GameState state, TestBot bot)
         {
             // Go to tavern
-            return bot.GetClosestTavern(state.myHero.pos);
+            return bot.GetClosestTavern(state.MyHero.Pos);
         }
     }
 }

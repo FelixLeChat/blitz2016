@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 
-namespace CoveoBlitz
+namespace Coveo.Core
 {
     /// <summary>
     /// SimpleBotRunner
@@ -10,24 +11,23 @@ namespace CoveoBlitz
     /// </summary>
     public class SimpleBotRunner
     {
-        private readonly ISimpleBot simpleBot;
+        private readonly ISimpleBot _simpleBot;
 
-        private readonly ApiToolkit api;
+        private readonly ApiToolkit _api;
 
-        private readonly bool showGame;
+        private readonly bool _showGame;
 
         /// <summary>
         /// Contructor
         /// </summary>
         /// <param name="api">The ApiToolit to use</param>
-        /// <param name="simpleBot"The ISimplebot to run></param>
+        /// <param name="simpleBot">The ISimplebot to run</param>
         /// <param name="showGame">Wetherwe want to open a game view</param>
-        public SimpleBotRunner(ApiToolkit api, ISimpleBot simpleBot, Boolean showGame = true)
-
+        public SimpleBotRunner(ApiToolkit api, ISimpleBot simpleBot, bool showGame = true)
         {
-            this.simpleBot = simpleBot;
-            this.api = api;
-            this.showGame = showGame;
+            _simpleBot = simpleBot;
+            _api = api;
+            _showGame = showGame;
         }
 
         /// <summary>
@@ -36,27 +36,27 @@ namespace CoveoBlitz
         public void Run()
         {
             // Bot's setup
-            simpleBot.Setup();
+            _simpleBot.Setup();
 
             // Connecting to the game
-            api.CreateGame();
+            _api.CreateGame();
 
-            if (api.errored == false)
+            if (_api.Errored == false)
             {
                 // Opens up a game view
-                if (showGame) {
+                if (_showGame) {
                     new Thread(delegate() {
-                        System.Diagnostics.Process.Start(api.viewURL);
+                        Process.Start(_api.ViewUrl);
                     }).Start();
                 }
 
                 // While the game is running, we ask the bot for his next move and
                 // we send that to the server
-                while (api.gameState.finished == false && api.errored == false)
+                while (_api.GameState.Finished == false && _api.Errored == false)
                 {
                     try
                     {
-                        api.MoveHero(simpleBot.Move(api.gameState));
+                        _api.MoveHero(_simpleBot.Move(_api.GameState));
                     }
                     catch (Exception ex)
                     {
@@ -66,7 +66,7 @@ namespace CoveoBlitz
             }
 
             // Bot's shutdown step
-            simpleBot.Shutdown();
+            _simpleBot.Shutdown();
         }
     }
 }
